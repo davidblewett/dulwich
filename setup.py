@@ -27,12 +27,12 @@ class DulwichDistribution(Distribution):
         return not self.pure
 
     global_options = Distribution.global_options + [
-        ('pure', None, 
+        ('pure', None,
             "use pure (slower) Python code instead of C extensions")]
 
     pure = False
 
-        
+
 setup(name='dulwich',
       description='Python Git Library',
       keywords='git',
@@ -61,4 +61,7 @@ setup(name='dulwich',
               include_dirs=include_dirs),
           ],
       distclass=DulwichDistribution,
+      entry_points={
+          'paste.app_factory': 'main=dulwich.web:make_paster_app'
+          }
       )
