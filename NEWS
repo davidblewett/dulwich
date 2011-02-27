@@ -16,6 +16,10 @@
 
   * Add basic support for alternates. (Jelmer Vernooij, #810429)
 
+  * Added an entry point (dulwich.web.make_paster_app) for Paste.Deploy to be
+    able to determine how to create an instance of HTTPGitApplication.
+    (David Blewett)
+
  CHANGES
 
   * unittest2 or python >= 2.7 is now required for the testsuite.
