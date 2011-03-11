@@ -17,8 +17,10 @@
     using Content-Encoding: gzip.
     (David Blewett)
 
-  * Added an entry point (dulwich.web.make_paster_app) for Paste.Deploy to be
-    able to determine how to create an instance of HTTPGitApplication.
+  * Added support for Paster to serve instances of HTTPGitApplication.
+    Powered by 3 new entry points: dulwich.contrib.paster.make_app,
+    dulwich.contrib.paster.make_gzip_filter and
+    dulwich.contrib.paster.make_limit_input_filter.
     (David Blewett)
 
 0.7.0	2011-01-21

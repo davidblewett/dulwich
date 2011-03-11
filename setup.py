@@ -62,6 +62,10 @@ setup(name='dulwich',
           ],
       distclass=DulwichDistribution,
       entry_points={
-          'paste.app_factory': 'main=dulwich.web:make_paster_app'
+          'paste.app_factory': 'main=dulwich.contrib.paster:make_app',
+          'paste.filter_factory': [
+              'gzip=dulwich.contrib.paster:make_gzip_filter',
+              'limitinput=dulwich.contrib.paster:make_limit_input_filter',
+            ]
           }
       )
