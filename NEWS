@@ -28,6 +28,12 @@
     able to determine how to create an instance of HTTPGitApplication.
     (David Blewett)
 
+  * Added support for Paster to serve instances of HTTPGitApplication.
+    Powered by 3 new entry points: dulwich.contrib.paster.make_app,
+    dulwich.contrib.paster.make_gzip_filter and
+    dulwich.contrib.paster.make_limit_input_filter.
+    (David Blewett)
+
  CHANGES
 
   * unittest2 or python >= 2.7 is now required for the testsuite.
