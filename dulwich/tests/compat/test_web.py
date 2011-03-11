@@ -36,6 +36,7 @@ from dulwich.tests import (
 from dulwich.web import (
     HTTPGitApplication,
     HTTPGitRequestHandler,
+    make_wsgi_chain,
     )
 
 from dulwich.tests.compat.server_utils import (
@@ -108,8 +109,12 @@ class SmartWebTestCase(WebTests, CompatTestCase):
         self.assertFalse('side-band-64k' in caps)
 
     def _make_app(self, backend):
-        app = HTTPGitApplication(backend, handlers=self._handlers())
-        self._check_app(app)
+        app = make_wsgi_chain(backend, handlers=self._handlers())
+        to_check = app
+        # peel back layers until we're at the base application
+        while not issubclass(to_check.__class__, HTTPGitApplication):
+            to_check = to_check.app
+        self._check_app(to_check)
         return app
 
 
@@ -140,7 +145,7 @@ class DumbWebTestCase(WebTests, CompatTestCase):
         CompatTestCase.tearDown(self)
 
     def _make_app(self, backend):
-        return HTTPGitApplication(backend, dumb=True)
+        return make_wsgi_chain(backend, dumb=True)
 
     def test_push_to_dulwich(self):
         # Note: remove this if dumb pushing is supported

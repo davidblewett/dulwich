@@ -13,6 +13,10 @@
 
   * Sphinxified documentation. (Lukasz Balcerzak)
 
+  * The WSGI server now transparently handles when a git client submits data
+    using Content-Encoding: gzip.
+    (David Blewett)
+
   * Added an entry point (dulwich.web.make_paster_app) for Paste.Deploy to be
     able to determine how to create an instance of HTTPGitApplication.
     (David Blewett)
