@@ -74,7 +74,7 @@ def make_app(global_config, **local_conf):
     from paste.deploy.converters import aslist
     repos = {}
     append_git = asbool(local_conf.pop('append_git', False))
-    serve_dirs = aslist(local_conf.pop('serve_dir', None))
+    serve_dirs = aslist(local_conf.pop('serve_dirs', None))
     log_utils.default_logging_config()
 
     def add_repo(mapping, path, gitdir):
@@ -84,7 +84,7 @@ def make_app(global_config, **local_conf):
             logger.error('Not a git repository, cannot serve: "%s".',
                          gitdir)
 
-    if not local_conf:
+    if not local_conf and not serve_dirs:
         add_repo(repos, '/', os.getcwd())
     else:
         if serve_dirs:
@@ -95,7 +95,7 @@ def make_app(global_config, **local_conf):
 
                 for d in os.listdir(top_dir):
                     repo_path = '/'.join(('', d))
-                    gitdir = os.path.sep.join(top_dir, d)
+                    gitdir = os.path.join(top_dir, d)
                     add_repo(repos, repo_path, gitdir)
 
         for repo_name, gitdir in local_conf.items():

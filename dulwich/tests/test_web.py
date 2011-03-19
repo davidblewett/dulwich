@@ -20,8 +20,13 @@
 
 from cStringIO import StringIO
 import gzip
+import os
 import re
+import shutil
 
+from dulwich.tests.compat.utils import (
+    import_repo_to_dir,
+    )
 from dulwich.object_store import (
     MemoryObjectStore,
     )
@@ -38,6 +43,7 @@ from dulwich.server import (
     )
 from dulwich.tests import (
     TestCase,
+    TestSkipped,
     )
 from dulwich.web import (
     HTTP_OK,
@@ -57,6 +63,9 @@ from dulwich.web import (
     HTTPGitRequest,
     HTTPGitApplication,
     )
+from dulwich.web.paster import (
+    make_app,
+)
 
 from dulwich.tests.utils import (
     make_object,
@@ -477,3 +486,59 @@ class GunzipTestCase(HTTPGitApplicationTestCase):
         self.assertEquals(orig, buf.read())
         self.assertLess(zlength, int(self._environ['CONTENT_LENGTH']))
         self.assertNotIn('HTTP_CONTENT_ENCODING', self._environ)
+
+class PasterFactoryTests(TestCase):
+    """Tests for the Paster factory and filter functions."""
+
+    def setUp(self):
+        super(PasterFactoryTests, self).setUp()
+        self.global_config = {'__file__': '/path/to/paster.ini'}
+        self.repo_dirs = []
+        self.repo_names = ('server_new.export', 'server_old.export')
+        for rname in self.repo_names:
+            self.repo_dirs.append(import_repo_to_dir(rname))
+        # Test import to see if paste.deploy is available
+        try:
+            from paste.deploy.converters import asbool
+        except ImportError:
+            raise TestSkipped('paste.deploy not available')
+
+    def tearDown(self):
+        super(PasterFactoryTests, self).setUp()
+        for rdir in self.repo_dirs:
+            shutil.rmtree(rdir)
+
+    def test_cwd(self):
+        cwd = os.getcwd()
+        os.chdir(self.repo_dirs[0])
+        app = make_app(self.global_config)
+        os.chdir(cwd)
+        self.assertIn('/', app.backend.repos)
+
+    def test_badrepo(self):
+        self.assertRaises(IndexError, make_app, self.global_config, foo='/')
+
+    def test_repo(self):
+        rname = self.repo_names[0]
+        local_config = {rname: self.repo_dirs[0]}
+        app = make_app(self.global_config, **local_config)
+        self.assertIn('/%s' % rname, app.backend.repos)
+
+    def _get_repo_parents(self):
+        repo_parents = []
+        for rdir in self.repo_dirs:
+            repo_parents.append(os.path.split(rdir)[0])
+        return repo_parents
+
+    def test_append_git(self):
+        app = make_app(self.global_config, append_git=True,
+                       serve_dirs=self._get_repo_parents())
+        for rname in self.repo_names:
+            self.assertIn('/%s.git' % rname, app.backend.repos)
+
+    def test_serve_dirs(self):
+        app = make_app(self.global_config, serve_dirs=self._get_repo_parents())
+        for rname in self.repo_names:
+            self.assertIn('/%s' % rname, app.backend.repos)
+
+
