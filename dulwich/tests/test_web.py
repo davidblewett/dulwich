@@ -511,7 +511,8 @@ class PasterFactoryTests(TestCase):
         try:
             from paste.deploy.converters import asbool
             from pkg_resources import WorkingSet
-            self.working_set = WorkingSet(_BASE_PKG_DIR)
+            self.working_set = WorkingSet()
+            self.working_set.add_entry(_BASE_PKG_DIR)
         except ImportError:
             raise TestSkipped('paste.deploy not available')
 
@@ -565,7 +566,9 @@ class PasterFactoryTests(TestCase):
         self._test_wrap(make_limit_input_filter, LimitedInputFilter)
 
     def test_entry_points(self):
+        test_points = {}
         for group in ('paste.app_factory', 'paste.filter_factory'):
             for ep in self.working_set.iter_entry_points(group):
-                factory = ep.load()
-                self.assertTrue(factory is self.entry_points[ep.name])
+                test_points[ep.name] = ep.load()
+
+        self.assertEquals(test_points, self.entry_points)

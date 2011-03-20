@@ -90,6 +90,8 @@ setup(name='dulwich',
               include_dirs=include_dirs),
           ],
       distclass=DulwichDistribution,
+      # If these are modified, the PasterFactoryTests.entry_points
+      # values need to be updated as well.
       entry_points={
           'paste.app_factory': 'main=dulwich.web.paster:make_app',
           'paste.filter_factory': [
