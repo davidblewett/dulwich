@@ -131,4 +131,8 @@ def make_gzip_filter(global_config):
 
 
 def make_limit_input_filter(global_config):
+    """Factory function to wrap a given WSGI application in a
+    LimitedInputFilter, to ensure wsgi.input hits EOF when the Content-Length
+    is reached.
+    """
     return LimitedInputFilter
