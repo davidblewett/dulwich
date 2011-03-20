@@ -74,6 +74,8 @@ from dulwich.tests.utils import (
     make_object,
     )
 
+_BASE_PKG_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), os.pardir, os.pardir))
 
 class TestHTTPGitRequest(HTTPGitRequest):
     """HTTPGitRequest with overridden methods to help test caching."""
@@ -498,13 +500,18 @@ class PasterFactoryTests(TestCase):
         self.global_config = {'__file__': '/path/to/paster.ini'}
         self.repo_dirs = []
         self.repo_names = ('server_new.export', 'server_old.export')
+        self.entry_points = {
+            'main': make_app,
+            'gzip': make_gzip_filter,
+            'limitinput': make_limit_input_filter,
+        }
         for rname in self.repo_names:
             self.repo_dirs.append(import_repo_to_dir(rname))
         # Test import to see if paste.deploy is available
         try:
             from paste.deploy.converters import asbool
-            from pkg_resources import load_entry_point
-            self.load_entry_point = load_entry_point
+            from pkg_resources import WorkingSet
+            self.working_set = WorkingSet(_BASE_PKG_DIR)
         except ImportError:
             raise TestSkipped('paste.deploy not available')
 
@@ -557,16 +564,8 @@ class PasterFactoryTests(TestCase):
     def test_make_limit_input_filter(self):
         self._test_wrap(make_limit_input_filter, LimitedInputFilter)
 
-    def _load_factory(self, protocol, name, factory):
-        test_factory = self.load_entry_point('dulwich', protocol, name)
-        self.assertTrue(test_factory is factory)
-
-    def test_app_factory(self):
-        self._load_factory('paste.app_factory', 'main', make_app)
-
-    def test_gzip_factory(self):
-        self._load_factory('paste.filter_factory', 'gzip', make_gzip_filter)
-
-    def test_limit_factory(self):
-        self._load_factory('paste.filter_factory', 'limitinput',
-                           make_limit_input_filter)
+    def test_entry_points(self):
+        for group in ('paste.app_factory', 'paste.filter_factory'):
+            for ep in self.working_set.iter_entry_points(group):
+                factory = ep.load()
+                self.assertTrue(factory is self.entry_points[ep.name])
