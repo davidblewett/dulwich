@@ -60,11 +60,14 @@ from dulwich.web import (
     handle_service_request,
     _LengthLimitedFile,
     GunzipFilter,
+    LimitedInputFilter,
     HTTPGitRequest,
     HTTPGitApplication,
     )
 from dulwich.web.paster import (
     make_app,
+    make_gzip_filter,
+    make_limit_input_filter,
 )
 
 from dulwich.tests.utils import (
@@ -500,6 +503,8 @@ class PasterFactoryTests(TestCase):
         # Test import to see if paste.deploy is available
         try:
             from paste.deploy.converters import asbool
+            from pkg_resources import load_entry_point
+            self.load_entry_point = load_entry_point
         except ImportError:
             raise TestSkipped('paste.deploy not available')
 
@@ -541,4 +546,27 @@ class PasterFactoryTests(TestCase):
         for rname in self.repo_names:
             self.assertIn('/%s' % rname, app.backend.repos)
 
+    def _test_wrap(self, factory, wrapper):
+        app = make_app(self.global_config, serve_dirs=self._get_repo_parents())
+        wrapped_app = factory(self.global_config)(app)
+        self.assertTrue(isinstance(wrapped_app, wrapper))
 
+    def test_make_gzip_filter(self):
+        self._test_wrap(make_gzip_filter, GunzipFilter)
+
+    def test_make_limit_input_filter(self):
+        self._test_wrap(make_limit_input_filter, LimitedInputFilter)
+
+    def _load_factory(self, protocol, name, factory):
+        test_factory = self.load_entry_point('dulwich', protocol, name)
+        self.assertTrue(test_factory is factory)
+
+    def test_app_factory(self):
+        self._load_factory('paste.app_factory', 'main', make_app)
+
+    def test_gzip_factory(self):
+        self._load_factory('paste.filter_factory', 'gzip', make_gzip_filter)
+
+    def test_limit_factory(self):
+        self._load_factory('paste.filter_factory', 'limitinput',
+                           make_limit_input_filter)
