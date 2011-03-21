@@ -1,5 +1,5 @@
 # paster.py -- WSGI smart-http server
-# Copyright (C) 2011 David Blewett
+# Copyright (C) 2011 David Blewett <david@dawninglight.net>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -15,6 +15,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA  02110-1301, USA.
+
+
+"""Factory functions for integrating the WSGI application into Paster."""
 
 import os
 
@@ -33,12 +36,18 @@ logger = log_utils.getLogger(__name__)
 
 def make_app(global_config, **local_conf):
     """Factory function for a Paster WSGI app
-    append_git=True will make each served git repo have .git appended to its
+
+    :param append_git: each served git repo have .git appended to its
         served URL.
+    :param serve_dirs: list of parent paths to check for sub-directories
+        to serve.
+
+    :returns: An instance of dulwich.web.HTTPGitApplication
 
     Two options to serve: serve_dirs and individual URL path to operating
     system path mappings.
-    Example:
+    Example::
+
         File-system layout:
             +-/var/lib/git
             |-foo
@@ -58,13 +67,14 @@ def make_app(global_config, **local_conf):
                 /home/git
             blerg = /home/dannyboy/src/blerg
 
-    Will result in the following being served:
-    /foo.git   => /var/lib/git/foo
-    /bar.git   => /var/lib/git/bar
-    /baz.git   => /var/lib/git/baz
-    /bing.git  => /home/git/bing
-    /bang.git  => /home/git/bang
-    /blerg.git => /home/dannyboy/src/blerg
+    Will result in the following being served::
+
+        /foo.git   => /var/lib/git/foo
+        /bar.git   => /var/lib/git/bar
+        /baz.git   => /var/lib/git/baz
+        /bing.git  => /home/git/bing
+        /bang.git  => /home/git/bang
+        /blerg.git => /home/dannyboy/src/blerg
 
     NOTE: The last name definition wins. Whatever directory in serve_dirs is
           last, or the last explicit mapping for the same name is what will
@@ -125,7 +135,7 @@ def make_app(global_config, **local_conf):
 
 def make_gzip_filter(global_config):
     """Factory function to wrap a given WSGI application in a GunzipFilter,
-    to transparently decode Content-Encoding: gzip requests.
+    to transparently decode a gzip-encoded wsg.input stream.
     """
     return GunzipFilter
 
