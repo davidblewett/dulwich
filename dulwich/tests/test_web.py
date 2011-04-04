@@ -571,4 +571,5 @@ class PasterFactoryTests(TestCase):
             for ep in self.working_set.iter_entry_points(group):
                 test_points[ep.name] = ep.load()
 
-        self.assertEquals(test_points, self.entry_points)
+        for ep_name, ep in self.entry_points.items():
+            self.assertTrue(test_points[ep_name] is ep)
