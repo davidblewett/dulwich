@@ -43,7 +43,7 @@ from dulwich.server import (
     )
 from dulwich.tests import (
     TestCase,
-    TestSkipped,
+    SkipTest,
     )
 from dulwich.web import (
     HTTP_OK,
@@ -514,7 +514,7 @@ class PasterFactoryTests(TestCase):
             self.working_set = WorkingSet()
             self.working_set.add_entry(_BASE_PKG_DIR)
         except ImportError:
-            raise TestSkipped('paste.deploy not available')
+            raise SkipTest('paste.deploy not available')
 
     def tearDown(self):
         super(PasterFactoryTests, self).setUp()
