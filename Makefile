@@ -16,6 +16,7 @@ pydoctor::
 	$(PYDOCTOR) --make-html -c dulwich.cfg
 
 build::
+	$(SETUP) egg_info
 	$(SETUP) build
 	$(SETUP) build_ext -i
 
@@ -34,3 +35,4 @@ check-noextensions:: clean
 clean::
 	$(SETUP) clean --all
 	rm -f dulwich/*.so
+	rm -rf *.egg-info
