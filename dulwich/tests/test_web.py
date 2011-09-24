@@ -27,6 +27,9 @@ import shutil
 from dulwich.tests.compat.utils import (
     import_repo_to_dir,
     )
+from dulwich.log_utils import (
+    getLogger
+    )
 from dulwich.object_store import (
     MemoryObjectStore,
     )
@@ -517,9 +520,12 @@ class PasterFactoryTests(TestCase):
             raise SkipTest('paste.deploy not available')
 
     def tearDown(self):
-        super(PasterFactoryTests, self).setUp()
+        super(PasterFactoryTests, self).tearDown()
         for rdir in self.repo_dirs:
             shutil.rmtree(rdir)
+        root = getLogger()
+        if root.handlers:
+            root.removeHandler(root.handlers[0])
 
     def test_cwd(self):
         cwd = os.getcwd()
